@@ -1,0 +1,134 @@
+import 'package:flutter/material.dart';
+import 'package:online_doc_savimex/feature/Model/document.dart';
+import 'package:online_doc_savimex/feature/screen/Homepage/widget/doc_list.dart';
+import 'package:online_doc_savimex/feature/screen/Homepage/widget/drawer_home_screen.dart';
+import 'package:online_doc_savimex/feature/screen/Upload/Upload_Document/upload_screen.dart';
+import 'package:online_doc_savimex/feature/service/document_service.dart';
+import 'package:online_doc_savimex/feature/widget/button.dart';
+import 'package:online_doc_savimex/feature/widget/search.dart';
+import '../../service/employee_service.dart';
+
+class Homescreen extends StatefulWidget {
+  final int employeeID;
+  const Homescreen({super.key, required this.employeeID});
+
+  @override
+  State<Homescreen> createState() => _HomescreenState();
+}
+
+class _HomescreenState extends State<Homescreen> {
+  late Future<List<Document>> _futureDocument;
+
+  Map<String, dynamic>? _employeeData;
+  bool _loading = true;
+  String? _error;
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    _fetchUser();
+    _loadDocument();
+  }
+
+  void _loadDocument(){
+    setState(() {
+      _futureDocument = fetchDocument();
+    });
+  }
+
+  Future<void> _fetchUser() async {
+    try {
+      final resp = await fetchUserById(widget.employeeID);
+      setState(() {
+        _employeeData = resp['employee'];
+        _loading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _error = e.toString();
+        _loading = false;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFF006080),
+      drawer: DrawerHomeScreen(employeeID: widget.employeeID,),
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF006080),
+        elevation: 0,
+        title: const Text(
+          'Document',
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {},
+            child: const Text(
+              'Edit',
+              style: TextStyle(color: Colors.yellow),
+            ),
+          ),
+        ],
+        iconTheme: const IconThemeData(color: Colors.yellow), // drawer icon color
+      ),// Background color
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              // Search Bara
+              SearchBarField(showIcon: true,),
+              const SizedBox(height: 16),
+              // Scrollable Document List
+              Expanded(
+
+                child: FutureBuilder(
+                  future: _futureDocument,
+                  builder: (context, snapshot){
+                    if(snapshot.connectionState == ConnectionState.waiting){
+                      return Center(child: CircularProgressIndicator(),);
+                    }
+                    if (snapshot.hasError){
+                      return Center(child: Text('Error: ${snapshot.error}'),
+                      );
+                    }
+                    final docData = snapshot.data!;
+                    if(docData.isEmpty){
+                      return Center(
+                        child: Text('No Document Data is Found!'),
+                      );
+                    }
+                    return ListView.builder(
+                      itemCount: docData.length,
+                      itemBuilder: (context, index){
+                        final doc = docData[index];
+                        return DocumentItem(
+                          title: 'Accounting',
+                          status: 'In progress',
+                          desc: "There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration in some form, by injected humour, or randomised words which don't look even slightly believable.",
+                        );
+                      },
+
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(height: 16),
+              // Fixed Bottom Button
+              mainButton(()=>Navigator.push(context, MaterialPageRoute(builder: (context)=>UploadScreen())), 'New Document', Colors.green),
+              const SizedBox(height: 8), // Padding below button
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+
