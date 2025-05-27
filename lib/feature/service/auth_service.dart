@@ -1,8 +1,6 @@
 import 'dart:convert';
-import 'package:flutter/cupertino.dart';
 import 'package:http/http.dart' as http;
 
-import '../Model/document_type.dart';
 import '../Model/employee.dart';
 
 const String _baseUrl = 'http://localhost:3000';

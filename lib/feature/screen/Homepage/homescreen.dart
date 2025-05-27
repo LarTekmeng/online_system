@@ -109,9 +109,9 @@ class _HomescreenState extends State<Homescreen> {
                       itemBuilder: (context, index){
                         final doc = docData[index];
                         return DocumentItem(
-                          title: 'Accounting',
-                          status: 'In progress',
-                          desc: "There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration in some form, by injected humour, or randomised words which don't look even slightly believable.",
+                          title: doc.title,
+                          status: 'In Progress',
+                          desc: doc.description,
                         );
                       },
 
@@ -121,7 +121,7 @@ class _HomescreenState extends State<Homescreen> {
               ),
               const SizedBox(height: 16),
               // Fixed Bottom Button
-              mainButton(()=>Navigator.push(context, MaterialPageRoute(builder: (context)=>UploadScreen())), 'New Document', Colors.green),
+              mainButton(()=>Navigator.push(context, MaterialPageRoute(builder: (context)=>UploadScreen(employeeID: widget.employeeID,))), 'New Document', Colors.green),
               const SizedBox(height: 8), // Padding below button
             ],
           ),

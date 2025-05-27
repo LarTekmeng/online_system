@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:online_doc_savimex/feature/screen/Doc_type/set_doc_type_screen.dart';
-import 'package:online_doc_savimex/feature/service/auth_service.dart';
 
 import '../../Model/document_type.dart';
 import '../../service/doctype_service.dart';
-import 'doc_type_screen.dart';
 
 class CreateDocumentTypeScreen extends StatefulWidget {
   final DocumentType? existing;

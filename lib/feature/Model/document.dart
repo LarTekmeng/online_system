@@ -11,9 +11,10 @@ class Document{
   });
   factory Document.fromJson(Map<String, dynamic> json){
     return Document(
-        id: json['id'],
-        title: json['d_title'],
-        doctypeId: json['d_typeId'],
-        description: json['d_desc']);
+        id: json['id'] as int?,
+        doctypeId: json['d_typeId'] as int,
+        title: json['d_title'] as String,
+        description: json['d_desc'] as String
+    );
   }
 }
