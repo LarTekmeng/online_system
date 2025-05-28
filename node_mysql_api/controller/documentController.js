@@ -29,7 +29,12 @@ exports.create = async (req, res) => {
     // correctly chain .status().json()
     res.status(201).json({
         message: 'Document Created',
-        id: result.insertId
+        document:{
+                id: result.insertId,
+                d_typeId,
+                d_title,
+                d_desc
+        }
       });
 
   } catch (err) {

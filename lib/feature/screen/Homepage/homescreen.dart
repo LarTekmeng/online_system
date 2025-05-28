@@ -87,7 +87,6 @@ class _HomescreenState extends State<Homescreen> {
               const SizedBox(height: 16),
               // Scrollable Document List
               Expanded(
-
                 child: FutureBuilder(
                   future: _futureDocument,
                   builder: (context, snapshot){

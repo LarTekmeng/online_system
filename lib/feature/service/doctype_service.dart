@@ -23,11 +23,9 @@ Future<Map<String, dynamic>> newDocType(String title, String description,) async
 
 Future<List<DocumentType>> fetchDocTypes() async {
   final resp = await http.get(Uri.parse('$_baseUrl/api/doctypes/list'));
-
   if (resp.statusCode != 200) {
     throw Exception('Failed to load document types (status ${resp.statusCode})');
   }
-
   final List<dynamic> body = jsonDecode(resp.body) as List<dynamic>;
   return body
       .map((e) => DocumentType.fromJson(e as Map<String, dynamic>))

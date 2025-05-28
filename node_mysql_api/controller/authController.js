@@ -14,7 +14,14 @@ exports.register = async (req, res) => {
       'INSERT INTO employee (employee_name, email, password) VALUES (?, ?, ?)',
       [employee_name, email, hash]
     );
-    res.status(201).json({ message: 'Registered successfully', id: result.insertId });
+    res.status(201).json({
+    message: 'Registered successfully',
+    employee: {
+        id: result.insertId,
+        employee_name,
+        email,
+    }
+    });
   } catch (e) {
     if (e.code === 'ER_DUP_ENTRY') {
       return res.status(409).json({ error: 'Email already in use' });

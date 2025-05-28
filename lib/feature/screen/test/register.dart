@@ -31,17 +31,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
     if (!_formKey.currentState!.validate()) return;
     setState(() { _loading = true; _error = ''; });
 
-    final res = await registerUser(
-      _nameCtrl.text.trim(),
-      _emailCtrl.text.trim(),
-      _passCtrl.text,
-    );
-
-    setState(() => _loading = false);
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (_) => const LoginScreen()),
-    );
+    try{
+      await registerUser(_nameCtrl.text.trim(), _emailCtrl.text.trim(), _passCtrl.text);
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const LoginScreen()),
+      );
+    }
+    catch (e){
+      setState(() => _error = e.toString().replaceFirst('Exception: ', ''));
+    }
+    finally {
+      setState(() => _loading = false);
+    }
   }
 
   @override
