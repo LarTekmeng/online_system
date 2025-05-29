@@ -1,9 +1,18 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:http/http.dart' as http;
 
 import '../Model/employee.dart';
 
-const String _baseUrl = 'http://localhost:3000';
+
+String getLocalhost(){
+  if(Platform.isAndroid){
+    return 'http://10.0.2.2:3000';
+  } else {
+    return 'http://localhost:3000';
+  }
+}
+String _baseUrl = getLocalhost();
 // - Android emulator: 10.0.2.2
 // - iOS Simulator or real device: use your machine IP (e.g. http://192.168.x.x:3000)
 
