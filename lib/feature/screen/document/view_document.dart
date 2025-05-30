@@ -15,7 +15,7 @@ class DocumentScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: const Icon(Icons.arrow_back),
+        leading: IconButton(icon: const Icon(Icons.arrow_back_ios), onPressed: (){Navigator.pop(context);}, ),
         backgroundColor: Colors.white,
         elevation: 0,
       ),
@@ -31,21 +31,18 @@ class DocumentScreen extends StatelessWidget {
               name: "Pheak (HR)",
               status: "Checked",
               date: "1 January 2031",
-              color: Colors.green,
             ),
             const TimelineStep(
               step: 2,
               name: "Rith (Accounting)",
               status: "Checked",
               date: "2 January 2031",
-              color: Colors.green,
             ),
             const TimelineStep(
               step: 3,
               name: "Boss (CEO)",
               status: "Approved",
               date: "5 January 2031",
-              color: Colors.blue,
             ),
             const Divider(),
             const SizedBox(height: 10),
@@ -80,7 +77,6 @@ class TimelineStep extends StatelessWidget {
   final String name;
   final String status;
   final String date;
-  final Color color;
 
   const TimelineStep({
     super.key,
@@ -88,12 +84,12 @@ class TimelineStep extends StatelessWidget {
     required this.name,
     required this.status,
     required this.date,
-    required this.color,
   });
 
   @override
   Widget build(BuildContext context) {
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Column(
           children: [
@@ -103,24 +99,38 @@ class TimelineStep extends StatelessWidget {
               child: Text('$step', style: const TextStyle(color: Colors.white)),
             ),
             if (step < 3)
-              Container(width: 2, height: 30, color: Colors.grey.shade400),
+              Container(width: 2, height: 20, color: Colors.grey.shade400),
           ],
         ),
         const SizedBox(width: 12),
-        Text.rich(
-          TextSpan(
-            children: [
-              TextSpan(text: "$name → "),
+        // Align text vertically with the center of the circle
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.only(top: 12), // Adjust for vertical alignment
+            child: Text.rich(
               TextSpan(
-                text: "$status",
-                style: TextStyle(color: color, fontWeight: FontWeight.bold),
+                children: [
+                  TextSpan(text: "$name → "),
+                  TextSpan(
+                    text: "$status",
+                    style: TextStyle(
+                      color: status == "Approved"
+                          ? Colors.blue
+                          : status == "Checked"
+                          ? Colors.green
+                          : Colors.grey,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  TextSpan(text: " - $date"),
+                ],
               ),
-              TextSpan(text: " - $date"),
-            ],
+            ),
           ),
         ),
       ],
     );
+
   }
 }
 
