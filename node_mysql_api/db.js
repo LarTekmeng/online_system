@@ -1,14 +1,13 @@
 // db.js
 require('dotenv').config();
-const mysql = require('mysql2/promise');    // ← note '/promise'
+const pgp = require('pg-promise')();
 
-const pool = mysql.createPool({
-  host:     process.env.DB_HOST,
-  user:     process.env.DB_USER,
-  password: process.env.DB_PASS,
+const db = pgp({
+  host: process.env.DB_HOST,
+  port: process.env.DB_PORT || 5432,
   database: process.env.DB_NAME,
-  waitForConnections: true,
-  connectionLimit: 10,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASS
 });
 
-module.exports = pool;
+module.exports = db;

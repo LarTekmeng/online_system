@@ -2,52 +2,49 @@ const db = require('../db');
 
 // GET /documents
 exports.list = async (req, res) => {
-  const sql = 'SELECT d_title, d_desc FROM document';
+  const sql = 'SELECT * FROM document';
   try {
-    const [rows] = await db.execute(sql);
+    const rows = await db.any(sql);
     return res.json(rows);
   } catch (e) {
-    console.error(e);
+    console.error('Error fetching documents:', e);
     return res.status(500).json({ error: 'Error fetching documents' });
   }
 };
 
-// POST / documents
+// POST /documents
 exports.create = async (req, res) => {
-  const { d_typeId, d_title, d_desc } = req.body;
-  if (d_typeId == null || d_title == null || d_desc == null) {
-    return res
-      .status(400)
-      .json({ error: 'Not enough field requirement' });
+  const { doctype_id, doc_title, doc_desc } = req.body;
+
+  // ✅ Improved validation: also handles empty strings
+  if (!doctype_id || !doc_title?.trim() || !doc_desc?.trim()) {
+    return res.status(400).json({ error: 'Missing required fields' });
   }
 
   try {
-    const [result] = await db.execute(
-    'INSERT INTO document (d_typeId, d_title, d_desc)VALUES (?, ?, ?)',
-    [d_typeId, d_title, d_desc]
+    const result = await db.one(
+      `INSERT INTO document (doctype_id, doc_title, doc_desc)
+       VALUES ($1, $2, $3)
+       RETURNING id`,
+      [doctype_id, doc_title.trim(), doc_desc.trim()]
     );
-    // correctly chain .status().json()
+
     res.status(201).json({
-        message: 'Document Created',
-        document:{
-                id: result.insertId,
-                d_typeId,
-                d_title,
-                d_desc
-        }
-      });
-
+      message: 'Document created',
+      document: {
+        id: result.id,
+        doctype_id,
+        doc_title: doc_title.trim(),
+        doc_desc: doc_desc.trim()
+      }
+    });
   } catch (err) {
-    console.error(err);
-
-    res
-      .status(500)
-      .json({ error: 'Error creating document' });
+    console.error('Error creating document:', err);
+    res.status(500).json({ error: 'Error creating document' });
   }
 };
 
-
-
+// Placeholder for future method
 exports.add = async (req, res) => {
-
-}
+  res.status(501).json({ message: 'Not implemented yet' });
+};

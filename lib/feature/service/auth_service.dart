@@ -13,8 +13,6 @@ String getLocalhost(){
   }
 }
 String _baseUrl = getLocalhost();
-// - Android emulator: 10.0.2.2
-// - iOS Simulator or real device: use your machine IP (e.g. http://192.168.x.x:3000)
 
 Future<Employee> registerUser(String name, String email, String password) async {
   final resp = await http.post(
@@ -49,11 +47,3 @@ Future<Employee> loginUser(String email, String password) async {
   final employeeJson = body['employee'] as Map<String, dynamic>;
   return Employee.fromJson(employeeJson);
 }
-
-
-
-
-
-
-
-

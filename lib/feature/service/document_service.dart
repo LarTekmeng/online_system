@@ -28,7 +28,7 @@ Future<Document> addDocument(int? typeId,String title, String description) async
   final resp = await http.post(
     uri,
     headers: {'Content-Type':'application/json'},
-    body: jsonEncode({'d_typeId':typeId,'d_title':title,'d_desc':description})
+    body: jsonEncode({'doctype_id':typeId,'doc_title':title,'doc_desc':description})
   );
   final data = jsonDecode(resp.body) as Map<String, dynamic>;
   if(resp.statusCode != 201){

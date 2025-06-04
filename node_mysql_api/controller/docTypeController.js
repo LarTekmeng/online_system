@@ -1,4 +1,3 @@
-// controllers/docTypeController.js
 const db = require('../db');
 
 exports.create = async (req, res) => {
@@ -7,11 +6,11 @@ exports.create = async (req, res) => {
     return res.status(400).json({ error: 'Missing fields' });
   }
   try {
-    const [result] = await db.execute(
-      'INSERT INTO doc_type (doc_title, doc_desc) VALUES (?, ?)',
+    const result = await db.one(
+      'INSERT INTO doctype (name, description) VALUES ($1, $2) RETURNING id',
       [doc_title, doc_desc]
     );
-    res.status(201).json({ message: 'Document type created', id: result.insertId });
+    res.status(201).json({ message: 'Document type created', id: result.id });
   } catch (e) {
     console.error(e);
     res.status(500).json({ error: 'Server error' });
@@ -20,7 +19,7 @@ exports.create = async (req, res) => {
 
 exports.list = async (req, res) => {
   try {
-    const [rows] = await db.execute('SELECT * FROM doc_type');
+    const rows = await db.any('SELECT * FROM doctype');
     res.json(rows);
   } catch (e) {
     console.error(e);
@@ -29,21 +28,20 @@ exports.list = async (req, res) => {
 };
 
 exports.delete = async (req, res) => {
-  const { id } = req.params;              // 1) pull the id from the URL
+  const { id } = req.params;
   try {
-    const [result] = await db.execute(
-      'DELETE FROM doc_type WHERE id = ?',
-      [id]                                 // 2) pass it into the query
+    const result = await db.result(
+      'DELETE FROM doctype WHERE id = $1',
+      [id]
     );
 
-    if (result.affectedRows === 0) {      // 3) nothing was deleted?
+    if (result.rowCount === 0) {
       return res.status(404).json({ error: 'Document type not found' });
     }
 
-    // 4) success
     res.status(200).json({
       message: 'Document type deleted',
-      id:      Number(id),                // echo back the id you deleted
+      id: Number(id),
     });
   } catch (e) {
     console.error(e);
@@ -55,29 +53,26 @@ exports.update = async (req, res) => {
   const { id } = req.params;
   const { doc_title, doc_desc } = req.body;
 
-  // Validate
   if (!doc_title || !doc_desc) {
     return res.status(400).json({ error: 'Missing fields' });
   }
 
   try {
-    const [result] = await db.execute(
-      'UPDATE doc_type SET doc_title = ?, doc_desc = ? WHERE id = ?',
-      [doc_title, doc_desc, id]       // ◀️ pass ALL three parameters
+    const result = await db.result(
+      'UPDATE doctype SET name = $1, description = $2 WHERE id = $3',
+      [doc_title, doc_desc, id]
     );
 
-    if (result.affectedRows === 0) {
+    if (result.rowCount === 0) {
       return res.status(404).json({ error: 'Document type not found' });
     }
 
     res.status(200).json({
       message: 'Document type updated',
-      id:      Number(id),
+      id: Number(id),
     });
   } catch (e) {
     console.error(e);
     res.status(500).json({ error: 'Server error' });
   }
 };
-
-

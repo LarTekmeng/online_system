@@ -9,12 +9,12 @@ class Document{
     this.doctypeId,
     required this.description
   });
-  factory Document.fromJson(Map<String, dynamic> json){
+  factory Document.fromJson(Map<String, dynamic> json) {
     return Document(
-        id: json['id'] as int?,
-        doctypeId: json['d_typeId'] as int?,
-        title: (json['d_title'] as String) ?? '',
-        description: (json['d_desc'] as String) ?? '',
+      id: json['id'] as int?,
+      doctypeId: json['doctype_id'] as int?,
+      title: json['doc_title']?.toString() ?? '',
+      description: json['doc_desc']?.toString() ?? '',
     );
   }
 }

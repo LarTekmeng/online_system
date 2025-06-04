@@ -1,9 +1,9 @@
-// controllers/employeeController.js
 const db = require('../db');
 
+// GET /employees
 exports.list = async (req, res) => {
   try {
-    const [rows] = await db.execute('SELECT * FROM employee');
+    const rows = await db.any('SELECT * FROM employee');
     res.json(rows);
   } catch (e) {
     console.error(e);
@@ -11,20 +11,24 @@ exports.list = async (req, res) => {
   }
 };
 
+// GET /employees/:id
 exports.getById = async (req, res) => {
   const { id } = req.params;
+
   try {
-    const [rows] = await db.execute(
-      `SELECT e.id, e.employee_name, e.email, e.dp_id, d.dp_name
+    const employee = await db.oneOrNone(
+      `SELECT e.id, e.employee_name, e.email, e.dp_id, d.name AS dp_name
        FROM employee e
        LEFT JOIN department d ON e.dp_id = d.id
-       WHERE e.id = ?`,
+       WHERE e.id = $1`,
       [id]
     );
-    if (!rows.length) {
+
+    if (!employee) {
       return res.status(404).json({ error: 'Employee not found' });
     }
-    res.json({ employee: rows[0] });
+
+    res.json({ employee });
   } catch (e) {
     console.error(e);
     res.status(500).json({ error: 'Server error' });

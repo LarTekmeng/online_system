@@ -1,4 +1,3 @@
-// controllers/authController.js
 const bcrypt = require('bcrypt');
 const db     = require('../db');
 
@@ -10,20 +9,24 @@ exports.register = async (req, res) => {
 
   try {
     const hash = await bcrypt.hash(password, 10);
-    const [result] = await db.execute(
-      'INSERT INTO employee (employee_name, email, password) VALUES (?, ?, ?)',
+
+    const result = await db.one(
+      `INSERT INTO employee (employee_name, email, password)
+       VALUES ($1, $2, $3)
+       RETURNING id`,
       [employee_name, email, hash]
     );
+
     res.status(201).json({
-    message: 'Registered successfully',
-    employee: {
-        id: result.insertId,
+      message: 'Registered successfully',
+      employee: {
+        id: result.id,
         employee_name,
         email,
-    }
+      }
     });
   } catch (e) {
-    if (e.code === 'ER_DUP_ENTRY') {
+    if (e.code === '23505') { // PostgreSQL duplicate key
       return res.status(409).json({ error: 'Email already in use' });
     }
     console.error(e);
@@ -38,12 +41,15 @@ exports.login = async (req, res) => {
   }
 
   try {
-    const [rows] = await db.execute('SELECT * FROM employee WHERE email = ?', [email]);
-    if (!rows.length) {
+    const employee = await db.oneOrNone(
+      `SELECT * FROM employee WHERE email = $1`,
+      [email]
+    );
+
+    if (!employee) {
       return res.status(401).json({ error: 'Invalid email or password' });
     }
 
-    const employee = rows[0];
     const match = await bcrypt.compare(password, employee.password);
     if (!match) {
       return res.status(401).json({ error: 'Invalid email or password' });
