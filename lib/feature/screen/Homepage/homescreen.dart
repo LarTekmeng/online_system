@@ -22,6 +22,7 @@ class _HomescreenState extends State<Homescreen> {
   Map<String, dynamic>? _employeeData;
   bool _loading = true;
   String? _error;
+  String? _isEdit;
   @override
   void initState() {
     // TODO: implement initState
@@ -30,7 +31,7 @@ class _HomescreenState extends State<Homescreen> {
     _loadDocument();
   }
 
-  void _loadDocument(){
+  void _loadDocument() {
     setState(() {
       _futureDocument = fetchDocument();
     });
@@ -55,57 +56,50 @@ class _HomescreenState extends State<Homescreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF006080),
-      drawer: DrawerHomeScreen(employeeID: widget.employeeID,),
+      drawer: DrawerHomeScreen(employeeID: widget.employeeID),
       appBar: AppBar(
         backgroundColor: const Color(0xFF006080),
         elevation: 0,
         title: const Text(
           'Document',
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         actions: [
           TextButton(
             onPressed: () {},
-            child: const Text(
-              'Edit',
-              style: TextStyle(color: Colors.yellow),
-            ),
+            child: const Text('Edit', style: TextStyle(color: Colors.yellow)),
           ),
         ],
-        iconTheme: const IconThemeData(color: Colors.yellow), // drawer icon color
-      ),// Background color
+        iconTheme: const IconThemeData(
+          color: Colors.yellow,
+        ), // drawer icon color
+      ), // Background color
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
             children: [
               // Search Bara
-              SearchBarField(showIcon: true,),
+              SearchBarField(showIcon: true),
               const SizedBox(height: 16),
               // Scrollable Document List
               Expanded(
                 child: FutureBuilder(
                   future: _futureDocument,
-                  builder: (context, snapshot){
-                    if(snapshot.connectionState == ConnectionState.waiting){
-                      return Center(child: CircularProgressIndicator(),);
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return Center(child: CircularProgressIndicator());
                     }
-                    if (snapshot.hasError){
-                      return Center(child: Text('Error: ${snapshot.error}'),
-                      );
+                    if (snapshot.hasError) {
+                      return Center(child: Text('Error: ${snapshot.error}'));
                     }
                     final docData = snapshot.data!;
-                    if(docData.isEmpty){
-                      return Center(
-                        child: Text('No Document Data is Found!'),
-                      );
+                    if (docData.isEmpty) {
+                      return Center(child: Text('No Document Data is Found!'));
                     }
                     return ListView.builder(
                       itemCount: docData.length,
-                      itemBuilder: (context, index){
+                      itemBuilder: (context, index) {
                         final doc = docData[index];
                         return DocumentItem(
                           title: doc.title,
@@ -113,14 +107,53 @@ class _HomescreenState extends State<Homescreen> {
                           desc: doc.description,
                         );
                       },
-
                     );
                   },
                 ),
               ),
               const SizedBox(height: 16),
               // Fixed Bottom Button
-              mainButton(()=>Navigator.push(context, MaterialPageRoute(builder: (context)=>UploadScreen(employeeID: widget.employeeID,))), 'New Document', Colors.green),
+              Container(
+                height: 50,
+                decoration: BoxDecoration(
+                  color: Colors.black12,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(10, 5, 10, 5),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      TextButton(
+                        onPressed: () {},
+                        child: Text(
+                          'Trash',
+                          style: TextStyle(color: Colors.orange),
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () {},
+                        child: Text(
+                          'Archive',
+                          style: TextStyle(color: Colors.orange),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              mainButton(
+                () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder:
+                        (context) =>
+                            UploadScreen(employeeID: widget.employeeID),
+                  ),
+                ),
+                'New Document',
+                Colors.green,
+              ),
               const SizedBox(height: 8), // Padding below button
             ],
           ),
@@ -129,5 +162,3 @@ class _HomescreenState extends State<Homescreen> {
     );
   }
 }
-
-
