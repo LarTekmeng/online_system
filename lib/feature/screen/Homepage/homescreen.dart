@@ -22,7 +22,7 @@ class _HomescreenState extends State<Homescreen> {
   Map<String, dynamic>? _employeeData;
   bool _loading = true;
   String? _error;
-  String? _isEdit;
+  bool _isEdit = false;
   @override
   void initState() {
     // TODO: implement initState
@@ -56,8 +56,9 @@ class _HomescreenState extends State<Homescreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF006080),
-      drawer: DrawerHomeScreen(employeeID: widget.employeeID),
+      drawer: _isEdit? null : DrawerHomeScreen(employeeID: widget.employeeID),
       appBar: AppBar(
+        leading: _isEdit? TextButton(onPressed: (){}, child: Text('Select all', style: TextStyle(color: Colors.yellow),)) : null,
         backgroundColor: const Color(0xFF006080),
         elevation: 0,
         title: const Text(
@@ -67,7 +68,11 @@ class _HomescreenState extends State<Homescreen> {
         actions: [
           TextButton(
             onPressed: () {},
-            child: const Text('Edit', style: TextStyle(color: Colors.yellow)),
+            child: TextButton(onPressed: (){
+              setState(() {
+                _isEdit = !_isEdit;
+              });
+            }, child: Text(_isEdit? 'Cancel':'Edit',style: TextStyle(color: Colors.yellow),)),
           ),
         ],
         iconTheme: const IconThemeData(
@@ -101,47 +106,40 @@ class _HomescreenState extends State<Homescreen> {
                       itemCount: docData.length,
                       itemBuilder: (context, index) {
                         final doc = docData[index];
-                        return DocumentItem(
-                          title: doc.title,
-                          status: 'In Progress',
-                          desc: doc.description,
+                        return Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            if(_isEdit)...[
+                              Checkbox(value: false,
+                               onChanged: (val){
+                               },
+                               shape: CircleBorder(),
+                               )
+                            ],
+                            Expanded(
+                              child: Padding(
+                                padding: EdgeInsets.only(left: _isEdit? 5.0 : 0.0),
+                                child: DocumentItem(
+                                  title: doc.title,
+                                  status: 'In Progress',
+                                  desc: doc.description,
+                                ),
+                              ),
+                            ),
+                          ],
                         );
                       },
                     );
                   },
                 ),
               ),
-              const SizedBox(height: 16),
-              // Fixed Bottom Button
-              Container(
-                height: 50,
-                decoration: BoxDecoration(
-                  color: Colors.black12,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Padding(
-                  padding: EdgeInsets.fromLTRB(10, 5, 10, 5),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      TextButton(
-                        onPressed: () {},
-                        child: Text(
-                          'Trash',
-                          style: TextStyle(color: Colors.orange),
-                        ),
-                      ),
-                      TextButton(
-                        onPressed: () {},
-                        child: Text(
-                          'Archive',
-                          style: TextStyle(color: Colors.orange),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+              const SizedBox(height: 10),
+              //Floating List action
+              if(_isEdit)
+              btnListAction(),
+
+              SizedBox(height: 10,),
+              //Click button to Upload document
               mainButton(
                 () => Navigator.push(
                   context,
