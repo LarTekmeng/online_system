@@ -1,8 +1,9 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:online_doc_savimex/feature/screen/Doc_type/doc_type_screen.dart';
-import 'package:online_doc_savimex/feature/screen/Login/login_screen.dart';
 
 import '../../../service/employee_service.dart';
+import '../../Doc_type/doc_type_screen.dart';
+import '../../Login/login_screen.dart';
 
 class DrawerHomeScreen extends StatefulWidget {
   final int employeeID;
@@ -13,14 +14,12 @@ class DrawerHomeScreen extends StatefulWidget {
 }
 
 class _DrawerHomeScreenState extends State<DrawerHomeScreen> {
-
   Map<String, dynamic>? _employeeData;
   bool _loading = true;
   String? _error;
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     _fetchUser();
   }
@@ -50,31 +49,44 @@ class _DrawerHomeScreenState extends State<DrawerHomeScreen> {
           DrawerHeader(
             decoration: const BoxDecoration(color: Colors.blue),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.start,
               children: [
                 CircleAvatar(
                   radius: 50,
-                  backgroundImage: AssetImage('assets/images/tiger-beer-logo.jpg'),
+                  backgroundImage:
+                  AssetImage('assets/images/tiger-beer-logo.jpg'),
                 ),
-                const SizedBox(width: 10,),
+                const SizedBox(width: 10),
                 Column(
-                  crossAxisAlignment: CrossAxisAlignment.start ,
                   mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('ID: ${_employeeData?['id']}',style: TextStyle(color: Colors.white, fontSize: 14),),
-                    Text('Name: ${_employeeData?['employee_name']}',style: TextStyle(color: Colors.white, fontSize: 14),),
-                    Text('DEP: ${_employeeData?['dp_name']}',style: TextStyle(color: Colors.white, fontSize: 14),),
+                    Text(
+                      'ID: ${_employeeData?['id'] ?? "..."}',
+                      style: TextStyle(color: Colors.white, fontSize: 14),
+                    ),
+                    Text(
+                      'Name: ${_employeeData?['employee_name'] ?? "..."}',
+                      style: TextStyle(color: Colors.white, fontSize: 14),
+                    ),
+                    Text(
+                      'DEP: ${_employeeData?['dp_name'] ?? "..."}',
+                      style: TextStyle(color: Colors.white, fontSize: 14),
+                    ),
                   ],
-                )
+                ),
               ],
             ),
           ),
           ListTile(
-            onTap: (){
-              Navigator.push(context, MaterialPageRoute(builder: (context) => DocumentTypeScreen(employeeID: widget.employeeID,)));
-            },
             leading: const Icon(Icons.type_specimen),
             title: const Text('Document Type'),
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) =>
+                    DocumentTypeScreen(employeeID: widget.employeeID),
+              ),
+            ),
           ),
           const ListTile(
             leading: Icon(Icons.archive),
@@ -85,15 +97,15 @@ class _DrawerHomeScreenState extends State<DrawerHomeScreen> {
             title: Text('Trash'),
           ),
           ListTile(
-            onTap: (){
-              Navigator.push(context, MaterialPageRoute(builder: (context)=>LoginScreen()));
-            },
             leading: const Icon(Icons.logout),
             title: const Text('Logout'),
+            onTap: () => Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                    builder: (_) => const LoginScreen())),
           ),
         ],
       ),
     );
   }
 }
-

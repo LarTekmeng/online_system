@@ -19,9 +19,6 @@ class Homescreen extends StatefulWidget {
 class _HomescreenState extends State<Homescreen> {
   late Future<List<Document>> _futureDocument;
 
-  Map<String, dynamic>? _employeeData;
-  bool _loading = true;
-  String? _error;
   bool _isEdit = false;
   @override
   void initState() {
@@ -40,15 +37,9 @@ class _HomescreenState extends State<Homescreen> {
   Future<void> _fetchUser() async {
     try {
       final resp = await fetchUserById(widget.employeeID);
-      setState(() {
-        _employeeData = resp['employee'];
-        _loading = false;
-      });
+      setState(() {});
     } catch (e) {
-      setState(() {
-        _error = e.toString();
-        _loading = false;
-      });
+      setState(() {});
     }
   }
 
@@ -56,34 +47,64 @@ class _HomescreenState extends State<Homescreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF006080),
-      drawer: _isEdit? null : DrawerHomeScreen(employeeID: widget.employeeID),
-      appBar: AppBar(
-        leading: _isEdit? TextButton(onPressed: (){}, child: Text('Select all', style: TextStyle(color: Colors.yellow),)) : null,
-        backgroundColor: const Color(0xFF006080),
-        elevation: 0,
-        title: const Text(
-          'Document',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {},
-            child: TextButton(onPressed: (){
-              setState(() {
-                _isEdit = !_isEdit;
-              });
-            }, child: Text(_isEdit? 'Cancel':'Edit',style: TextStyle(color: Colors.yellow),)),
-          ),
-        ],
-        iconTheme: const IconThemeData(
-          color: Colors.yellow,
-        ), // drawer icon color
-      ), // Background color
+      // Background color
+      drawer: _isEdit ? null : DrawerHomeScreen(employeeID: widget.employeeID),
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
           child: Column(
             children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  // Left side: Drawer icon or Select All
+                  _isEdit
+                      ? TextButton(
+                        onPressed: () {
+                          // TODO: Add "Select All" logic here
+                        },
+                        child: const Text(
+                          'Select All',
+                          style: TextStyle(color: Colors.yellow),
+                        ),
+                      )
+                      : Builder(
+                        builder:
+                            (context) => IconButton(
+                              icon: const Icon(
+                                Icons.menu,
+                                color: Colors.yellow,
+                              ),
+                              onPressed:
+                                  () => Scaffold.of(context).openDrawer(),
+                            ),
+                      ),
+
+                  // Center: Title
+                  const Text(
+                    'Document',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+
+                  // Right side: Edit/Cancel button
+                  TextButton(
+                    onPressed: () {
+                      setState(() {
+                        _isEdit = !_isEdit;
+                      });
+                    },
+                    child: Text(
+                      _isEdit ? 'Cancel' : 'Edit',
+                      style: const TextStyle(color: Colors.yellow),
+                    ),
+                  ),
+                ],
+              ),
+
               // Search Bara
               SearchBarField(showIcon: true),
               const SizedBox(height: 16),
@@ -109,16 +130,18 @@ class _HomescreenState extends State<Homescreen> {
                         return Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            if(_isEdit)...[
-                              Checkbox(value: false,
-                               onChanged: (val){
-                               },
-                               shape: CircleBorder(),
-                               )
+                            if (_isEdit) ...[
+                              Checkbox(
+                                value: false,
+                                onChanged: (val) {},
+                                shape: CircleBorder(),
+                              ),
                             ],
                             Expanded(
                               child: Padding(
-                                padding: EdgeInsets.only(left: _isEdit? 5.0 : 0.0),
+                                padding: EdgeInsets.only(
+                                  left: _isEdit ? 5.0 : 0.0,
+                                ),
                                 child: DocumentItem(
                                   title: doc.title,
                                   status: 'In Progress',
@@ -135,10 +158,9 @@ class _HomescreenState extends State<Homescreen> {
               ),
               const SizedBox(height: 10),
               //Floating List action
-              if(_isEdit)
-              btnListAction(),
+              if (_isEdit) btnListAction(),
 
-              SizedBox(height: 10,),
+              SizedBox(height: 10),
               //Click button to Upload document
               mainButton(
                 () => Navigator.push(

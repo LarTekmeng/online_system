@@ -37,4 +37,3 @@ Future<Document> addDocument(int? typeId,String title, String description) async
   final documentData = data['document'] as Map<String, dynamic>;
   return Document.fromJson(documentData);
 }
-
