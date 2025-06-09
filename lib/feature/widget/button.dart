@@ -14,7 +14,7 @@ Widget mainButton(VoidCallback onTap, String text, Color color) {
   );
 }
 
-Widget btnListAction(){
+Widget btnListAction(VoidCallback btnTrash, VoidCallback btnArchive){
   return Container(
     height: 50,
     decoration: BoxDecoration(
@@ -26,15 +26,17 @@ Widget btnListAction(){
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
+          //Trash
           TextButton(
-            onPressed: (){},
+            onPressed: btnTrash,
             child: Text(
             'Trash',
               style: TextStyle(color: Colors.yellow),
             ),
           ),
+          //Archive
           TextButton(
-            onPressed: (){},
+            onPressed: btnArchive,
             child: Text(
               'Archive',
               style: TextStyle(color: Colors.yellow),

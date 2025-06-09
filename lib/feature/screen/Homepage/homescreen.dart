@@ -18,14 +18,20 @@ class Homescreen extends StatefulWidget {
 
 class _HomescreenState extends State<Homescreen> {
   late Future<List<Document>> _futureDocument;
+  // track which docs are checked:
+  final Set<int> _selectedDocIds = {};
 
   bool _isEdit = false;
+
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     _fetchUser();
     _loadDocument();
+  }
+
+  Future<void> _fetchUser()async {
+    fetchUserById(widget.employeeID);
   }
 
   void _loadDocument() {
@@ -34,67 +40,81 @@ class _HomescreenState extends State<Homescreen> {
     });
   }
 
-  Future<void> _fetchUser() async {
-    try {
-      final resp = await fetchUserById(widget.employeeID);
-      setState(() {});
-    } catch (e) {
-      setState(() {});
-    }
+  void _toggleSelectAll(List<Document> docs) {
+    setState(() {
+      if (_selectedDocIds.length == docs.length) {
+        _selectedDocIds.clear();
+      } else {
+        _selectedDocIds
+          ..clear()
+          ..addAll(docs.map((d) => d.id as int));
+      }
+    });
+  }
+
+  void _onCheckboxChanged(bool? checked, int docId) {
+    setState(() {
+      if (checked == true) {
+        _selectedDocIds.add(docId);
+      } else {
+        _selectedDocIds.remove(docId);
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF006080),
-      // Background color
-      drawer: _isEdit ? null : DrawerHomeScreen(employeeID: widget.employeeID),
+      drawer: _isEdit
+          ? null
+          : DrawerHomeScreen(employeeID: widget.employeeID),
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Column(
             children: [
+              // header row with Select All / Cancel
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  // Left side: Drawer icon or Select All
                   _isEdit
                       ? TextButton(
-                        onPressed: () {
-                          // TODO: Add "Select All" logic here
-                        },
-                        child: const Text(
-                          'Select All',
-                          style: TextStyle(color: Colors.yellow),
-                        ),
-                      )
+                    onPressed: () async {
+                      // need the current list to know how many items:
+                      final docs = await _futureDocument;
+                      _toggleSelectAll(docs);
+                    },
+                    child: Text(
+                      _selectedDocIds.isEmpty
+                          ? 'Select All'
+                          : 'Unselect All',
+                      style: const TextStyle(color: Colors.yellow),
+                    ),
+                  )
                       : Builder(
-                        builder:
-                            (context) => IconButton(
-                              icon: const Icon(
-                                Icons.menu,
-                                color: Colors.yellow,
-                              ),
-                              onPressed:
-                                  () => Scaffold.of(context).openDrawer(),
-                            ),
-                      ),
-
-                  // Center: Title
+                    builder: (ctx) => IconButton(
+                      icon: const Icon(Icons.menu,
+                          color: Colors.yellow),
+                      onPressed: () =>
+                          Scaffold.of(ctx).openDrawer(),
+                    ),
+                  ),
                   const Text(
                     'Document',
                     style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
+                        color: Colors.white,
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold),
                   ),
-
-                  // Right side: Edit/Cancel button
                   TextButton(
                     onPressed: () {
                       setState(() {
                         _isEdit = !_isEdit;
+                        if (!_isEdit) {
+                          // clear selections when exiting edit mode?
+                          _selectedDocIds.clear();
+                        }
                       });
                     },
                     child: Text(
@@ -105,43 +125,52 @@ class _HomescreenState extends State<Homescreen> {
                 ],
               ),
 
-              // Search Bara
               SearchBarField(showIcon: true),
               const SizedBox(height: 16),
-              // Scrollable Document List
+
+              // documents list
               Expanded(
-                child: FutureBuilder(
+                child: FutureBuilder<List<Document>>(
                   future: _futureDocument,
                   builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return Center(child: CircularProgressIndicator());
+                    if (snapshot.connectionState ==
+                        ConnectionState.waiting) {
+                      return Center(
+                          child: CircularProgressIndicator());
                     }
                     if (snapshot.hasError) {
-                      return Center(child: Text('Error: ${snapshot.error}'));
+                      return Center(
+                          child:
+                          Text('Error: ${snapshot.error}'));
                     }
-                    final docData = snapshot.data!;
-                    if (docData.isEmpty) {
-                      return Center(child: Text('No Document Data is Found!'));
+                    final docs = snapshot.data!;
+                    if (docs.isEmpty) {
+                      return Center(
+                          child:
+                          Text('No Document Data is Found!'));
                     }
+
                     return ListView.builder(
-                      itemCount: docData.length,
+                      itemCount: docs.length,
                       itemBuilder: (context, index) {
-                        final doc = docData[index];
+                        final doc = docs[index];
+                        final isChecked =
+                        _selectedDocIds.contains(doc.id);
                         return Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                          crossAxisAlignment:
+                          CrossAxisAlignment.start,
                           children: [
-                            if (_isEdit) ...[
+                            if (_isEdit)
                               Checkbox(
-                                value: false,
-                                onChanged: (val) {},
+                                value: isChecked,
+                                onChanged: (val) =>
+                                    _onCheckboxChanged(val, doc.id as int),
                                 shape: CircleBorder(),
                               ),
-                            ],
                             Expanded(
                               child: Padding(
                                 padding: EdgeInsets.only(
-                                  left: _isEdit ? 5.0 : 0.0,
-                                ),
+                                    left: _isEdit ? 5.0 : 0.0),
                                 child: DocumentItem(
                                   title: doc.title,
                                   status: 'In Progress',
@@ -156,25 +185,33 @@ class _HomescreenState extends State<Homescreen> {
                   },
                 ),
               ),
-              const SizedBox(height: 10),
-              //Floating List action
-              if (_isEdit) btnListAction(),
 
-              SizedBox(height: 10),
-              //Click button to Upload document
+              const SizedBox(height: 10),
+              if (_isEdit)
+                btnListAction(
+                    (){
+                      /* Trash the selected Document List here */
+                      print('Trash');
+                    },
+                        (){
+                      /* Archive the selected Document List here  */
+                      print('Archive');
+                }
+                ), // you can now act on _selectedDocIds
+
+              const SizedBox(height: 10),
               mainButton(
-                () => Navigator.push(
+                    () => Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder:
-                        (context) =>
-                            UploadScreen(employeeID: widget.employeeID),
+                    builder: (_) =>
+                        UploadScreen(employeeID: widget.employeeID),
                   ),
                 ),
                 'New Document',
                 Colors.green,
               ),
-              const SizedBox(height: 8), // Padding below button
+              const SizedBox(height: 8),
             ],
           ),
         ),
@@ -182,3 +219,4 @@ class _HomescreenState extends State<Homescreen> {
     );
   }
 }
+
