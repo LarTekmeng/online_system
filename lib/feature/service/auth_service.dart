@@ -8,7 +8,8 @@ import '../Model/employee.dart';
 String getLocalhost(){
   if(Platform.isAndroid){
     return 'http://10.0.2.2:3000';
-  } else {
+  } 
+  else{
     return 'http://localhost:3000';
   }
 }

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:online_doc_savimex/feature/screen/Login/login_screen.dart';
+import 'package:online_doc_savimex/feature/screen/signIn_signUp/login_screen.dart';
 import '../../service/auth_service.dart';
 
 class RegisterScreen extends StatefulWidget {

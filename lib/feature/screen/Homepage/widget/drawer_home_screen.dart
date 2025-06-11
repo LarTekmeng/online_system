@@ -1,9 +1,8 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../../../service/employee_service.dart';
 import '../../Doc_type/doc_type_screen.dart';
-import '../../Login/login_screen.dart';
+import '../../signIn_signUp/login_screen.dart';
 
 class DrawerHomeScreen extends StatefulWidget {
   final int employeeID;
@@ -15,8 +14,6 @@ class DrawerHomeScreen extends StatefulWidget {
 
 class _DrawerHomeScreenState extends State<DrawerHomeScreen> {
   Map<String, dynamic>? _employeeData;
-  bool _loading = true;
-  String? _error;
 
   @override
   void initState() {
@@ -29,12 +26,9 @@ class _DrawerHomeScreenState extends State<DrawerHomeScreen> {
       final resp = await fetchUserById(widget.employeeID);
       setState(() {
         _employeeData = resp['employee'];
-        _loading = false;
       });
     } catch (e) {
       setState(() {
-        _error = e.toString();
-        _loading = false;
       });
     }
   }
