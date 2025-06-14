@@ -2,8 +2,8 @@ const bcrypt = require('bcrypt');
 const db     = require('../db');
 
 exports.register = async (req, res) => {
-  const { employee_name, email, password } = req.body;
-  if (!employee_name || !email || !password) {
+  const { employee_name, email, password, dp_id, em_id } = req.body;
+  if (!employee_name || !email || !password || !dp_id || !em_id) {
     return res.status(400).json({ error: 'Missing fields' });
   }
 
@@ -11,10 +11,10 @@ exports.register = async (req, res) => {
     const hash = await bcrypt.hash(password, 10);
 
     const result = await db.one(
-      `INSERT INTO employee (employee_name, email, password)
-       VALUES ($1, $2, $3)
+      `INSERT INTO employee (employee_name, email, password, dp_id, em_id)
+       VALUES ($1, $2, $3, $4, $5)
        RETURNING id`,
-      [employee_name, email, hash]
+      [employee_name, email, dp_id, em_id, hash]
     );
 
     res.status(201).json({
@@ -23,6 +23,8 @@ exports.register = async (req, res) => {
         id: result.id,
         employee_name,
         email,
+        dp_id,
+        em_id,
       }
     });
   } catch (e) {
@@ -35,24 +37,24 @@ exports.register = async (req, res) => {
 };
 
 exports.login = async (req, res) => {
-  const { email, password } = req.body;
-  if (!email || !password) {
+  const { em_id, password } = req.body;
+  if (!em_id || !password) {
     return res.status(400).json({ error: 'Missing fields' });
   }
 
   try {
     const employee = await db.oneOrNone(
-      `SELECT * FROM employee WHERE email = $1`,
-      [email]
+      `SELECT * FROM employee WHERE em_id = $1`,
+      [em_id]
     );
 
     if (!employee) {
-      return res.status(401).json({ error: 'Invalid email or password' });
+      return res.status(401).json({ error: 'Invalid Employee id or password' });
     }
 
     const match = await bcrypt.compare(password, employee.password);
     if (!match) {
-      return res.status(401).json({ error: 'Invalid email or password' });
+      return res.status(401).json({ error: 'Invalid Employee id or password' });
     }
 
     res.json({
@@ -60,7 +62,9 @@ exports.login = async (req, res) => {
       employee: {
         id:            employee.id,
         employee_name: employee.employee_name,
-        email:         employee.email
+        email:         employee.email,
+        dp_id:         employee.dp_id,
+        em_id:         employee.em_id,
       }
     });
   } catch (e) {
