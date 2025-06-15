@@ -1,6 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:online_doc_savimex/feature/screen/test/register.dart';
+import 'package:online_doc_savimex/feature/screen/register/register.dart';
 import '../../service/auth_service.dart';
 import '../Homepage/homescreen.dart';
 

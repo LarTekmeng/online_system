@@ -1,3 +1,5 @@
+/* This is Controller*/
+
 const db = require('../db');
 
 exports.all = async (req, res) => {
