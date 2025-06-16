@@ -17,7 +17,7 @@ class AuthRepository{
 
   final String _baseUrl = getLocalhost();
 
-  Future<Employee> registerUser(String name, String email, String password, int departmentID, String employeeID) async {
+  Future<Employee> registerEmployee(String name, String email, String password, int departmentID, String employeeID) async {
     final resp = await http.post(
       Uri.parse('$_baseUrl/api/auth/register'),
       headers: {'Content-Type': 'application/json'},
@@ -42,6 +42,8 @@ class AuthRepository{
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({'em_id': employeeID, 'password': password}),
     );
+    print('Status: ${resp.statusCode}');
+    print('Body: ${resp.body}');
     final Map<String, dynamic> body = jsonDecode(resp.body);
     if (resp.statusCode != 200 || body['message'] != 'Login successful') {
       throw Exception(body['error'] ?? 'Login failed');

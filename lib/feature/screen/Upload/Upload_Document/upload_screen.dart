@@ -7,7 +7,7 @@ import 'package:online_doc_savimex/feature/service/doctype_service.dart';
 import 'package:online_doc_savimex/feature/service/document_service.dart';
 
 class UploadScreen extends StatefulWidget {
-  final int employeeID;
+  final String employeeID;
   const UploadScreen({super.key, required this.employeeID});
 
   @override

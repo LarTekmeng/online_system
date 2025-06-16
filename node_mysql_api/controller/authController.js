@@ -14,7 +14,7 @@ exports.register = async (req, res) => {
       `INSERT INTO employee (employee_name, email, password, dp_id, em_id)
        VALUES ($1, $2, $3, $4, $5)
        RETURNING id`,
-      [employee_name, email, dp_id, em_id, hash]
+      [employee_name, email,hash,dp_id,em_id]
     );
 
     res.status(201).json({
@@ -41,20 +41,18 @@ exports.login = async (req, res) => {
   if (!em_id || !password) {
     return res.status(400).json({ error: 'Missing fields' });
   }
-
   try {
     const employee = await db.oneOrNone(
       `SELECT * FROM employee WHERE em_id = $1`,
       [em_id]
     );
-
     if (!employee) {
-      return res.status(401).json({ error: 'Invalid Employee id or password' });
+      return res.status(401).json({ error: 'Invalid ID or Password' });
     }
 
     const match = await bcrypt.compare(password, employee.password);
     if (!match) {
-      return res.status(401).json({ error: 'Invalid Employee id or password' });
+      return res.status(401).json({ error: 'Invalid Password' });
     }
 
     res.json({

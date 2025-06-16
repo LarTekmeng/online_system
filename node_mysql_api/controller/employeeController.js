@@ -12,17 +12,18 @@ exports.list = async (req, res) => {
 };
 
 // GET /employees/:id
-exports.getById = async (req, res) => {
-  const { id } = req.params;
-
+exports.getByEmployeeId = async (req, res) => {
+  const { employeeId } = req.params;
   try {
     const employee = await db.oneOrNone(
-      `SELECT e.id, e.employee_name, e.email, e.dp_id, d.name AS dp_name
+      `SELECT e.employee_name, e.email, e.dp_id, e.em_id, d.name AS dp_name
        FROM employee e
        LEFT JOIN department d ON e.dp_id = d.id
-       WHERE e.id = $1`,
-      [id]
+       WHERE e.em_id = $1`,
+      [employeeId]
     );
+
+    res.json({ employee });
 
     if (!employee) {
       return res.status(404).json({ error: 'Employee not found' });

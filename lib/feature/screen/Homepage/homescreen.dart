@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:online_doc_savimex/feature/Model/document.dart';
+import 'package:online_doc_savimex/feature/repositories/employee_repo.dart';
 import 'package:online_doc_savimex/feature/screen/Homepage/widget/doc_list.dart';
 import 'package:online_doc_savimex/feature/screen/Homepage/widget/drawer_home_screen.dart';
 import 'package:online_doc_savimex/feature/screen/Upload/Upload_Document/upload_screen.dart';
@@ -9,7 +11,7 @@ import 'package:online_doc_savimex/feature/widget/search.dart';
 import '../../service/employee_service.dart';
 
 class Homescreen extends StatefulWidget {
-  final int employeeID;
+  final String employeeID;
   const Homescreen({super.key, required this.employeeID});
 
   @override
@@ -31,7 +33,8 @@ class _HomescreenState extends State<Homescreen> {
   }
 
   Future<void> _fetchUser()async {
-    fetchUserById(widget.employeeID);
+    final authRepo = context.read<EmployeeRepository>();
+    await authRepo.fetchEmployeeByID(widget.employeeID);
   }
 
   void _loadDocument() {

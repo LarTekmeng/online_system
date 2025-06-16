@@ -6,15 +6,20 @@ import 'package:http/http.dart' as http;
 import '../Model/department.dart';
 
 
-String getLocalhost() {
-  if (Platform.isAndroid) return 'http://10.0.2.2:3000';
-  return 'http://localhost:3000';
+String getLocalhost(){
+  if(Platform.isAndroid){
+    return 'http://10.0.2.2:3000';
+  } else {
+    return 'http://localhost:3000';
+  }
 }
 
 class DepartmentRepository {
+
+  final String _bashUrl = getLocalhost();
   /// Fetches all departments from GET /api/departments/department
   Future<List<Department>> fetchDepartments() async {
-    final url = Uri.parse('${getLocalhost()}/api/departments/department');
+    final url = Uri.parse('$_bashUrl/api/departments/all');
     final response = await http.get(url);
 
     if (response.statusCode != 200) {
@@ -22,9 +27,6 @@ class DepartmentRepository {
           'Failed to load departments (status: ${response.statusCode})'
       );
     }
-
-    // debug: print the raw JSON to confirm its shape
-    debugPrint('departments JSON → ${response.body}');
 
     // Parse as a List since your controller does `res.json(rows)` directly
     final List rawList = jsonDecode(response.body) as List;

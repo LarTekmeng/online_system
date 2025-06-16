@@ -1,12 +1,13 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:online_doc_savimex/feature/Model/employee.dart';
+import 'package:online_doc_savimex/feature/repositories/employee_repo.dart';
 
-import '../../../service/employee_service.dart';
 import '../../Doc_type/doc_type_screen.dart';
 import '../../Login/login_screen.dart';
 
 class DrawerHomeScreen extends StatefulWidget {
-  final int employeeID;
+  final String employeeID;
   const DrawerHomeScreen({super.key, required this.employeeID});
 
   @override
@@ -14,33 +15,46 @@ class DrawerHomeScreen extends StatefulWidget {
 }
 
 class _DrawerHomeScreenState extends State<DrawerHomeScreen> {
-  Map<String, dynamic>? _employeeData;
-  bool _loading = true;
-  String? _error;
+  Employee?   _employee;
+  bool        _loading = true;
+  String?     _error;
 
   @override
   void initState() {
     super.initState();
-    _fetchUser();
+    _loadAll();
   }
 
-  Future<void> _fetchUser() async {
+  /// 1) load employee, then load that employee's department
+  Future<void> _loadAll() async {
     try {
-      final resp = await fetchUserById(widget.employeeID);
+      final empRepo = context.read<EmployeeRepository>();
+      final empRaw = await empRepo.fetchEmployeeByID(widget.employeeID);
+      final employee = Employee.fromJson(empRaw);
       setState(() {
-        _employeeData = resp['employee'];
-        _loading = false;
+        _employee   = employee;
+        _loading    = false;
       });
     } catch (e) {
       setState(() {
-        _error = e.toString();
-        _loading = false;
+        _error    = e.toString();
+        _loading  = false;
       });
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    // 2) while loading, show spinner
+    if (_loading) {
+      return Drawer(child: Center(child: CircularProgressIndicator()));
+    }
+    // 3) if error, show it
+    if (_error != null) {
+      return Drawer(child: Center(child: Text('Error: $_error')));
+    }
+    // 4) now both _employee and _department are non-null
+    final e = _employee!;
     return Drawer(
       backgroundColor: Colors.white,
       child: ListView(
@@ -60,23 +74,21 @@ class _DrawerHomeScreenState extends State<DrawerHomeScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      'ID: ${_employeeData?['id'] ?? "..."}',
-                      style: TextStyle(color: Colors.white, fontSize: 14),
-                    ),
-                    Text(
-                      'Name: ${_employeeData?['employee_name'] ?? "..."}',
-                      style: TextStyle(color: Colors.white, fontSize: 14),
-                    ),
-                    Text(
-                      'DEP: ${_employeeData?['dp_name'] ?? "..."}',
-                      style: TextStyle(color: Colors.white, fontSize: 14),
-                    ),
+                    Text('ID: ${e.employeeID}',
+                        style:
+                        const TextStyle(color: Colors.white, fontSize: 14)),
+                    Text('Name: ${e.employeeName}',
+                        style:
+                        const TextStyle(color: Colors.white, fontSize: 14)),
+                    Text('DEP: ${e.departmentName}',
+                        style:
+                        const TextStyle(color: Colors.white, fontSize: 14)),
                   ],
                 ),
               ],
             ),
           ),
+
           ListTile(
             leading: const Icon(Icons.type_specimen),
             title: const Text('Document Type'),
@@ -88,24 +100,20 @@ class _DrawerHomeScreenState extends State<DrawerHomeScreen> {
               ),
             ),
           ),
-          const ListTile(
-            leading: Icon(Icons.archive),
-            title: Text('Archive'),
-          ),
-          const ListTile(
-            leading: Icon(Icons.delete),
-            title: Text('Trash'),
-          ),
+
+          // … other menu items …
+
           ListTile(
             leading: const Icon(Icons.logout),
             title: const Text('Logout'),
             onTap: () => Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(
-                    builder: (_) => const LoginScreen())),
+              context,
+              MaterialPageRoute(builder: (_) => const LoginScreen()),
+            ),
           ),
         ],
       ),
     );
   }
 }
+

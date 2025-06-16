@@ -8,7 +8,7 @@ import '../../Model/document_type.dart';
 import '../../service/doctype_service.dart';
 
 class DocumentTypeScreen extends StatefulWidget {
-  final int employeeID;
+  final String employeeID;
   const DocumentTypeScreen({super.key, required this.employeeID});
 
   @override

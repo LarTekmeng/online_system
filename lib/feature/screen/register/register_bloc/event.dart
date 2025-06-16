@@ -1,8 +1,11 @@
 // lib/bloc/auth/auth_event.dart
-abstract class AuthRegisterEvent {}
+abstract class RegisterEvent {}
 
-class RegisterRequested extends AuthRegisterEvent {
-  final String employeeName, email, password, departmentID, employeeID;
+class LoadDepartments extends RegisterEvent {}
+
+class RegisterRequested extends RegisterEvent {
+  final String employeeName, email, password, employeeID;
+  final int departmentID;
   RegisterRequested(
       this.employeeName,
       this.email,

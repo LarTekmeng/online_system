@@ -1,25 +1,27 @@
 import 'package:equatable/equatable.dart';
-import 'package:online_doc_savimex/feature/Model/employee.dart';
+import '../../../Model/department.dart';
 
-abstract class AuthRegisterState extends Equatable {
+abstract class RegisterState extends Equatable {
   @override
   List<Object?> get props => [];
 }
 
-class AuthInitial extends AuthRegisterState {}
-class AuthLoading extends AuthRegisterState {}
+class RegisterInitial extends RegisterState {}
+class RegisterLoading extends RegisterState {}
 
-class AuthAuthenticated extends AuthRegisterState {
-  final Employee user;
-  AuthAuthenticated(this.user);
+class DepartmentsLoadSuccess extends RegisterState {
+  final List<Department> departments;
+  DepartmentsLoadSuccess(this.departments);
 
   @override
-  List<Object?> get props => [user];
+  List<Object?> get props => [departments];
 }
 
-class AuthFailure extends AuthRegisterState {
+class RegisterSuccess extends RegisterState {}
+
+class RegisterFailure extends RegisterState {
   final String error;
-  AuthFailure(this.error);
+  RegisterFailure(this.error);
 
   @override
   List<Object?> get props => [error];

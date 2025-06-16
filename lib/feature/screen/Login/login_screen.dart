@@ -1,7 +1,8 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:online_doc_savimex/feature/repositories/auth_repo.dart';
 import 'package:online_doc_savimex/feature/screen/register/register.dart';
-import '../../service/auth_service.dart';
 import '../Homepage/homescreen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -12,16 +13,16 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final _formKey   = GlobalKey<FormState>();
-  final _emailCtrl = TextEditingController();
-  final _passCtrl  = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+  final _employeeIdCtrl = TextEditingController();
+  final _passCtrl = TextEditingController();
 
-  bool   _loading  = false;
-  String _error    = '';
+  bool _loading = false;
+  String _error = '';
 
   @override
   void dispose() {
-    _emailCtrl.dispose();
+    _employeeIdCtrl.dispose();
     _passCtrl.dispose();
     super.dispose();
   }
@@ -30,21 +31,20 @@ class _LoginScreenState extends State<LoginScreen> {
     if (!_formKey.currentState!.validate()) return;
     setState(() {
       _loading = true;
-      _error   = '';
+      _error = '';
     });
 
     try {
-      final employee = await loginUser(
-        _emailCtrl.text.trim(),
-        _passCtrl.text,
+      final authRepo = context.read<AuthRepository>();
+      final employee = await authRepo.loginUser(
+        _employeeIdCtrl.text.trim(),
+        _passCtrl.text.trim(),
       );
       // on success, navigate
       if (!mounted) return;
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(
-          builder: (_) => Homescreen(employeeID: employee.id!),
-        ),
+        MaterialPageRoute(builder: (_) => Homescreen(employeeID: employee.employeeID)),
       );
     } catch (e) {
       setState(() => _error = e.toString().replaceAll('Exception: ', ''));
@@ -70,7 +70,9 @@ class _LoginScreenState extends State<LoginScreen> {
                 borderRadius: BorderRadius.circular(15),
                 boxShadow: const [
                   BoxShadow(
-                      color: Colors.black26, blurRadius: 8, offset: Offset(0, 4)
+                    color: Colors.black26,
+                    blurRadius: 8,
+                    offset: Offset(0, 4),
                   ),
                 ],
               ),
@@ -80,20 +82,16 @@ class _LoginScreenState extends State<LoginScreen> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     // logo
-                    Image.asset(
-                      'assets/images/company_logo.png',
-                      height: 80,
-                    ),
+                    Image.asset('assets/images/company_logo.png', height: 80),
                     const SizedBox(height: 20),
 
                     // Email
                     _buildTextField(
-                      label: 'Email',
-                      controller: _emailCtrl,
+                      label: 'ID',
+                      controller: _employeeIdCtrl,
                       validator: (v) {
-                        if (v == null || v.isEmpty) return 'Enter email';
-                        final re = RegExp(r'^[^@]+@[^@]+\.[^@]+');
-                        return re.hasMatch(v) ? null : 'Invalid email';
+                        if (v == null || v.isEmpty) return 'Enter ID';
+                        return null;
                       },
                     ),
                     const SizedBox(height: 10),
@@ -103,8 +101,11 @@ class _LoginScreenState extends State<LoginScreen> {
                       label: 'Password',
                       controller: _passCtrl,
                       obscure: true,
-                      validator: (v) =>
-                      (v == null || v.isEmpty) ? 'Enter password' : null,
+                      validator:
+                          (v) =>
+                              (v == null || v.isEmpty)
+                                  ? 'Enter password'
+                                  : null,
                     ),
                     const SizedBox(height: 10),
 
@@ -124,34 +125,51 @@ class _LoginScreenState extends State<LoginScreen> {
                     _loading
                         ? const CircularProgressIndicator()
                         : ElevatedButton(
-                      onPressed: _submit,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        elevation: 4,
-                        shadowColor: Colors.black45,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      child: const Padding(
-                        padding: EdgeInsets.symmetric(
-                            horizontal: 30.0, vertical: 12),
-                        child: Text(
-                          'Login',
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontWeight: FontWeight.bold,
+                          onPressed: _submit,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.white,
+                            elevation: 4,
+                            shadowColor: Colors.black45,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          child: const Padding(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 30.0,
+                              vertical: 12,
+                            ),
+                            child: Text(
+                              'Login',
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                           ),
                         ),
-                      ),
-                    ),
                     Row(
                       children: [
-                        Text('Does not have an account?',style: TextStyle(color: Colors.white),),
-                        TextButton(onPressed: (){Navigator.push(context, MaterialPageRoute(builder: (_) => RegisterScreen()));}, child: Text('REGISTER',style: TextStyle(color: Colors.amber),))
+                        Text(
+                          'Does not have an account?',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => RegisterScreen(),
+                              ),
+                            );
+                          },
+                          child: Text(
+                            'REGISTER',
+                            style: TextStyle(color: Colors.amber),
+                          ),
+                        ),
                       ],
-                    )
-
+                    ),
                   ],
                 ),
               ),
@@ -182,9 +200,7 @@ class _LoginScreenState extends State<LoginScreen> {
             filled: true,
             fillColor: Colors.white,
             contentPadding: const EdgeInsets.symmetric(horizontal: 10),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
           ),
         ),
       ],
