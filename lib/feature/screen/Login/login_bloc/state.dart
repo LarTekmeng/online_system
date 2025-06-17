@@ -10,11 +10,11 @@ class AuthInitial extends AuthLoginState {}
 class AuthLoading extends AuthLoginState {}
 
 class AuthAuthenticated extends AuthLoginState {
-  final Employee user;
-  AuthAuthenticated(this.user);
+  final Employee employee;
+  AuthAuthenticated(this.employee);
 
   @override
-  List<Object?> get props => [user];
+  List<Object?> get props => [employee];
 }
 
 class AuthFailure extends AuthLoginState {

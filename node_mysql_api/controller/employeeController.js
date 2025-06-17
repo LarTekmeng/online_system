@@ -14,24 +14,33 @@ exports.list = async (req, res) => {
 // GET /employees/:id
 exports.getByEmployeeId = async (req, res) => {
   const { employeeId } = req.params;
+
   try {
     const employee = await db.oneOrNone(
-      `SELECT e.employee_name, e.email, e.dp_id, e.em_id, d.name AS dp_name
+      `SELECT
+         e.employee_name,
+         e.email,
+         e.dp_id,
+         e.em_id,
+         d.name AS dp_name
        FROM employee e
        LEFT JOIN department d ON e.dp_id = d.id
        WHERE e.em_id = $1`,
       [employeeId]
     );
 
-    res.json({ employee });
-
     if (!employee) {
+      // return so we never fall through to another res.* call
       return res.status(404).json({ error: 'Employee not found' });
     }
 
-    res.json({ employee });
-  } catch (e) {
-    console.error(e);
-    res.status(500).json({ error: 'Server error' });
+    // only one response for the successful path
+    return res.json({ employee });
+
+  } catch (err) {
+    console.error(err);
+    // headersSent check is handled by Express if you have an error‐handler later
+    return res.status(500).json({ error: 'Server error' });
   }
 };
+

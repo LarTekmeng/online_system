@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:online_doc_savimex/feature/repositories/employee_repo.dart';
+import 'package:online_doc_savimex/feature/screen/Login/login_bloc/bloc.dart';
 import 'package:online_doc_savimex/feature/screen/Login/login_screen.dart';
 import 'package:online_doc_savimex/feature/screen/register/register_bloc/bloc.dart';
 import 'package:online_doc_savimex/feature/screen/register/register_bloc/event.dart';
@@ -29,6 +30,7 @@ void main() {
             )
               ..add(LoadDepartments()),
           ),
+          BlocProvider<AuthLoginBloc>(create: (ctx) => AuthLoginBloc(ctx.read<AuthRepository>()))
 
           // (You can add other Blocs here, e.g. AuthBloc, EmployeeBloc, etc.)
         ],

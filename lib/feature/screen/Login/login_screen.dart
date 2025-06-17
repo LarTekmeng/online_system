@@ -1,13 +1,14 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:online_doc_savimex/feature/repositories/auth_repo.dart';
+import 'package:online_doc_savimex/feature/screen/Login/login_bloc/bloc.dart';
+import 'package:online_doc_savimex/feature/screen/Login/login_bloc/event.dart';
+import 'package:online_doc_savimex/feature/screen/Login/login_bloc/state.dart';
 import 'package:online_doc_savimex/feature/screen/register/register.dart';
 import '../Homepage/homescreen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
-
   @override
   State<LoginScreen> createState() => _LoginScreenState();
 }
@@ -17,9 +18,6 @@ class _LoginScreenState extends State<LoginScreen> {
   final _employeeIdCtrl = TextEditingController();
   final _passCtrl = TextEditingController();
 
-  bool _loading = false;
-  String _error = '';
-
   @override
   void dispose() {
     _employeeIdCtrl.dispose();
@@ -27,104 +25,104 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  Future<void> _submit() async {
+  void _submit() {
     if (!_formKey.currentState!.validate()) return;
-    setState(() {
-      _loading = true;
-      _error = '';
-    });
-
-    try {
-      final authRepo = context.read<AuthRepository>();
-      final employee = await authRepo.loginUser(
+    context.read<AuthLoginBloc>().add(
+      LoginRequested(
         _employeeIdCtrl.text.trim(),
         _passCtrl.text.trim(),
-      );
-      // on success, navigate
-      if (!mounted) return;
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => Homescreen(employeeID: employee.employeeID)),
-      );
-    } catch (e) {
-      setState(() => _error = e.toString().replaceAll('Exception: ', ''));
-    } finally {
-      if (mounted) setState(() => _loading = false);
-    }
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF006D86),
-      body: Center(
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(15),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-            child: Container(
-              width: 320,
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.3),
-                borderRadius: BorderRadius.circular(15),
-                boxShadow: const [
-                  BoxShadow(
-                    color: Colors.black26,
-                    blurRadius: 8,
-                    offset: Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // logo
-                    Image.asset('assets/images/company_logo.png', height: 80),
-                    const SizedBox(height: 20),
+    return BlocConsumer<AuthLoginBloc, AuthLoginState>(
+      listener: (context, state) {
+        if (state is AuthAuthenticated) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (_) => Homescreen(employeeID: state.employee.employeeID),
+            ),
+          );
+        }
+        if (state is AuthFailure) {
+          ScaffoldMessenger.of(context)
+            ..hideCurrentSnackBar()
+            ..showSnackBar(SnackBar(content: Text(state.error)));
+        }
+      },
+      builder: (context, state) {
+        final loading = state is AuthLoading;
+        final errorMessage = state is AuthFailure ? state.error : '';
 
-                    // Email
-                    _buildTextField(
-                      label: 'ID',
-                      controller: _employeeIdCtrl,
-                      validator: (v) {
-                        if (v == null || v.isEmpty) return 'Enter ID';
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 10),
-
-                    // Password
-                    _buildTextField(
-                      label: 'Password',
-                      controller: _passCtrl,
-                      obscure: true,
-                      validator:
-                          (v) =>
-                              (v == null || v.isEmpty)
-                                  ? 'Enter password'
-                                  : null,
-                    ),
-                    const SizedBox(height: 10),
-
-                    // Error
-                    if (_error.isNotEmpty)
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 8),
-                        child: Text(
-                          _error,
-                          style: const TextStyle(color: Colors.red),
-                        ),
+        return Scaffold(
+          backgroundColor: const Color(0xFF006D86),
+          body: Center(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(15),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                child: Container(
+                  width: 320,
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.3),
+                    borderRadius: BorderRadius.circular(15),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Colors.black26,
+                        blurRadius: 8,
+                        offset: Offset(0, 4),
                       ),
+                    ],
+                  ),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // logo
+                        Image.asset('assets/images/company_logo.png',
+                            height: 80),
+                        const SizedBox(height: 20),
 
-                    const SizedBox(height: 10),
+                        // ID
+                        _buildTextField(
+                          label: 'ID',
+                          controller: _employeeIdCtrl,
+                          validator: (v) =>
+                          (v == null || v.isEmpty) ? 'Enter ID' : null,
+                        ),
+                        const SizedBox(height: 10),
 
-                    // Login button / spinner
-                    _loading
-                        ? const CircularProgressIndicator()
-                        : ElevatedButton(
+                        // Password
+                        _buildTextField(
+                          label: 'Password',
+                          controller: _passCtrl,
+                          obscure: true,
+                          validator: (v) => (v == null || v.isEmpty)
+                              ? 'Enter password'
+                              : null,
+                        ),
+                        const SizedBox(height: 10),
+
+                        // Error
+                        if (errorMessage.isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 8),
+                            child: Text(
+                              errorMessage,
+                              style: const TextStyle(color: Colors.red),
+                            ),
+                          ),
+                        const SizedBox(height: 10),
+
+                        // Login button / spinner
+                        loading
+                            ? const CircularProgressIndicator()
+                            : ElevatedButton(
                           onPressed: _submit,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.white,
@@ -148,35 +146,39 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           ),
                         ),
-                    Row(
-                      children: [
-                        Text(
-                          'Does not have an account?',
-                          style: TextStyle(color: Colors.white),
-                        ),
-                        TextButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => RegisterScreen(),
+
+                        const SizedBox(height: 10),
+                        Row(
+                          children: [
+                            const Text(
+                              'Does not have an account?',
+                              style: TextStyle(color: Colors.white),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (_) =>
+                                      const RegisterScreen()),
+                                );
+                              },
+                              child: const Text(
+                                'REGISTER',
+                                style: TextStyle(color: Colors.amber),
                               ),
-                            );
-                          },
-                          child: Text(
-                            'REGISTER',
-                            style: TextStyle(color: Colors.amber),
-                          ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
-                  ],
+                  ),
                 ),
               ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
@@ -200,7 +202,8 @@ class _LoginScreenState extends State<LoginScreen> {
             filled: true,
             fillColor: Colors.white,
             contentPadding: const EdgeInsets.symmetric(horizontal: 10),
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+            border:
+            OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
           ),
         ),
       ],
